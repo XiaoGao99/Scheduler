@@ -1,3 +1,7 @@
+// Author: Xiao Gao
+// Date: Feb 12 2023
+// Description: Perform FCFS scheduling algorithm to schedule tasks for CPU. 
+
 #include "schedulers.h"
 #include "task.h"
 #include "list.h"
@@ -8,16 +12,20 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define SIZE 100
 // head node of the task list
 struct node *g_head;
 // initial tid
 int tid = 1;
 // track time
 int time = 0;
-
+// infos array to store all the time info
 Info **infos;
-int index = 0;
+int idx = 0;
+
+// declartion of helper method
+Task *pickNextTask();
+void fill_info(Info *info, Task *task);
+
 // add a task to the list
 void add(char *name, int priority, int burst)
 {
@@ -54,7 +62,8 @@ void schedule()
     // increment the current time
     time += task->burst;
     fill_info(info, task);
-    infos[index++] = info;
+    infos[task->tid - 1] = info;
+    idx++;
     printf("        Time is now: %d\n", time);
   }
 }
@@ -69,48 +78,54 @@ void fill_info(Info *info, Task *task)
   info->rt = time - task->burst;
   info->wt = time - task->burst;
 }
+
 void print_utilization()
 {
-  float rate = time / (time + tid - 1);
+  printf("\n");
+  float finish_time = (float)time;
+  float dispatcher_time = finish_time + (float)tid - 2;
+  float rate = finish_time / dispatcher_time;
   rate *= 100;
-  printf("CPU Utilization: %.2f", rate);
+  printf("CPU Utilization: %.2f%c\n", rate, 37);
 }
 
 void generate_table()
 {
-  print("...| ");
-  for (int i = 0; i < index; i++)
+  printf("\n");
+  printf("...| ");
+  for (int i = 0; i < idx; i++)
   {
-    printf("%-8s", infos[i]->name);
-    print(" | ");
+    printf("%-5s", infos[i]->name);
+    printf(" | ");
   }
-  print("\n");
-  print("TAT| ");
-  for (int i = 0; i < index; i++)
+  printf("\n");
+  printf("TAT| ");
+  for (int i = 0; i < idx; i++)
   {
-    printf("%-8d", infos[i]->tat);
-    print(" | ");
+    printf("%-5d", infos[i]->tat);
+    printf(" | ");
   }
-  print("\n");
-  print("WT | ");
-  for (int i = 0; i < index; i++)
+  printf("\n");
+  printf("WT | ");
+  for (int i = 0; i < idx; i++)
   {
-    printf("%-8d", infos[i]->wt);
-    print(" | ");
+    printf("%-5d", infos[i]->wt);
+    printf(" | ");
   }
-  print("\n");
-  print("RT | ");
-  for (int i = 0; i < index; i++)
+  printf("\n");
+  printf("RT | ");
+  for (int i = 0; i < idx; i++)
   {
-    printf("%-8d", infos[i]->rt);
-    print(" | ");
+    printf("%-5d", infos[i]->rt);
+    printf(" | ");
   }
-  print("\n");
-  for (int i = 0; i < index; i++)
+  printf("\n");
+  for (int i = 0; i < idx; i++)
   {
     free(infos[i]);
   }
   free(infos);
+  free(g_head);
 }
 
 bool comesBefore(char *a, char *b) { return strcmp(a, b) < 0; }
